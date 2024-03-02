@@ -103,14 +103,16 @@ void loop(){
 	currentTime = millis();
 		if (currentTime - lastTime >= LOOP_TIME){
 			lastTime = currentTime;
-			failTimer++;
-			if (watchdogTimer++ > 250){
+			if (watchdogTimer++ > 35){
+				failTimer++;
 				watchdogTimer = 20;
+				Serial.println(watchdogTimer);
 				watchdogFails++;
 				timeofLastFail = (millis()/1000);
 				if (timeofFirstFail == 0)
 					timeofFirstFail = (millis()/1000);
-			}
+			}else{
+				failTimer = 0;
 			if (failTimer >4){
 				failTimer = 0;
 				Serial.println(watchdogFails);
@@ -126,6 +128,7 @@ void loop(){
 				
 			}
 		}
+		}
 
 	uint16_t len = EthUDPFromAOG.parsePacket();
 
@@ -135,11 +138,11 @@ void loop(){
 	// }
 	if (len > 4) {
 		EthUDPFromAOG.read(udpData, UDP_TX_PACKET_MAX_SIZE);
-		// Serial.println(udpData[3]);
-		Serial.println();
+		 //Serial.println(udpData[3]);
 
 		if (udpData[0] == 0x80 && udpData[1] == 0x81 && udpData[2] == 0x7F) // Data
 		{
+			
 
 			if (udpData[3] == 239) // machine data
 			{
@@ -153,17 +156,18 @@ void loop(){
 					watchdogTimer = 0;
 				}
 
-				// Serial.println("hello from agio");
+				 Serial.println("hello from agio");
+				helloFromMachine[5] = 255;
+				helloFromMachine[6] = 255;
 
-				SendUdp(helloFromMachine, sizeof(helloFromMachine), Eth_ipDestination,
-						portDestination);
+				SendUdp(helloFromMachine, sizeof(helloFromMachine), Eth_ipDestination, portDestination);
 				delay(50);
 			}
 		}
 	}
 }
 
-void SendUdp(uint8_t *pgnData, uint8_t datalen, IPAddress dip, uint16_t dport)
+void SendUdp(uint8_t *data, uint8_t datalen, IPAddress dip, uint16_t dport)
 {
 	EthUDPToAOG.beginPacket(dip, dport);
 	EthUDPToAOG.write(data, datalen);
