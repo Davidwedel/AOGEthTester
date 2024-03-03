@@ -103,21 +103,23 @@ void loop(){
 	currentTime = millis();
 		if (currentTime - lastTime >= LOOP_TIME){
 			lastTime = currentTime;
-			if (watchdogTimer++ > 35){
-				failTimer++;
+			failTimer++;
+			if (watchdogTimer++ > 250)
 				watchdogTimer = 20;
-				Serial.println(watchdogTimer);
+			if (watchdogTimer == 19){
 				watchdogFails++;
 				timeofLastFail = (millis()/1000);
 				if (timeofFirstFail == 0)
 					timeofFirstFail = (millis()/1000);
-			}else{
+			}
+			if (failTimer >8){
 				failTimer = 0;
-			if (failTimer >4){
-				failTimer = 0;
-				Serial.println(watchdogFails);
-				Serial.print("First fail => "); Serial.print(timeofFirstFail);
-				Serial.print("		Last fail => "); Serial.println(timeofLastFail);
+				Serial.println();
+				Serial.println("-----------------------------------------------------");
+				Serial.print("Watchdog => "); Serial.println(watchdogTimer);
+				Serial.print("Watchdog Fails => "); Serial.println(watchdogFails);
+				Serial.print("First fail => "); Serial.print(timeofFirstFail); Serial.println(" Seconds");
+				Serial.print("Last fail => "); Serial.print(timeofLastFail); Serial.println(" Seconds");
 				if (!EthUdpRunning)
 					Serial.println("Eth not running");
 				// Check for Ethernet hardware present
@@ -127,7 +129,6 @@ void loop(){
 				}
 				
 			}
-		}
 		}
 
 	uint16_t len = EthUDPFromAOG.parsePacket();
@@ -156,7 +157,6 @@ void loop(){
 					watchdogTimer = 0;
 				}
 
-				 Serial.println("hello from agio");
 				helloFromMachine[5] = 255;
 				helloFromMachine[6] = 255;
 
